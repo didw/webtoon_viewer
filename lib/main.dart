@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+
+import 'webtoon/webtoon_image_list.dart';
 
 void main() => runApp(MyApp());
 
@@ -43,6 +46,24 @@ class _WebtoonListState extends State<WebtoonList> {
     }
   }
 
+  _loadWebtoonImages(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    final webtoonsJson = prefs.getString('webtoons');
+    if (webtoonsJson != null) {
+      final webtoons =
+          List<Map<String, dynamic>>.from(json.decode(webtoonsJson));
+      final webtoon = webtoons[index];
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WebtoonImageList(webtoon: webtoon),
+        ),
+      );
+    } else {
+      // Handle error
+    }
+  }
+
   _toggleRead(int index) async {
     final prefs = await SharedPreferences.getInstance();
     final webtoonsJson = prefs.getString('webtoons');
@@ -54,6 +75,7 @@ class _WebtoonListState extends State<WebtoonList> {
         'id': webtoon['id'],
         'title': webtoon['title'],
         'read': webtoon['read'] == 0 ? 1 : 0,
+        'images': webtoon['images'],
       };
       prefs.setString('webtoons', json.encode(webtoons));
       _loadWebtoons();
@@ -74,11 +96,16 @@ class _WebtoonListState extends State<WebtoonList> {
           final webtoon = _webtoons[index];
           return ListTile(
             title: Text(webtoon['title']),
-            trailing: Icon(
-              webtoon['read'] == 0 ? Icons.bookmark_border : Icons.bookmark,
-              color: webtoon['read'] == 0 ? null : Colors.red,
+            trailing: IconButton(
+              icon: Icon(
+                webtoon['read'] == 0
+                    ? Icons.check_box_outline_blank
+                    : Icons.check_box,
+                color: webtoon['read'] == 0 ? null : Colors.blue,
+              ),
+              onPressed: () => _toggleRead(index),
             ),
-            onTap: () => _toggleRead(index),
+            onTap: () => _loadWebtoonImages(index),
           );
         },
       ),
