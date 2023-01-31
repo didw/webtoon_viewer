@@ -20,23 +20,27 @@ class WebtoonContentPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _WebtoonContentPageState createState() => _WebtoonContentPageState();
+  WebtoonContentPageState createState() => WebtoonContentPageState();
 }
 
-class _WebtoonContentPageState extends State<WebtoonContentPage> {
+class WebtoonContentPageState extends State<WebtoonContentPage> {
   List<String> _images = [];
-  late ScrollController _scrollController;
+  int _currentIndex = 0;
+  String _title = '';
+  String _path = '';
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.index;
+    _title = widget.title;
+    _path = widget.path;
     _loadImages();
   }
 
   void _loadImages() {
     // Get the list of images for the selected webtoon
-    String path = widget.path;
-    Directory directory = Directory(path);
+    Directory directory = Directory(_path);
     List<FileSystemEntity> entities = directory.listSync();
 
     // Create a list of image paths
@@ -63,7 +67,7 @@ class _WebtoonContentPageState extends State<WebtoonContentPage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            title: Text(widget.title),
+            title: Text(_title),
             floating: false,
           ),
           SliverList(
@@ -94,24 +98,14 @@ class _WebtoonContentPageState extends State<WebtoonContentPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 10),
                       iconSize: 100.0,
-                      icon: Icon(Icons.arrow_back),
+                      icon: const Icon(Icons.arrow_back),
                       onPressed: () {
-                        if (widget.index > 0) {
-                          widget.updateVisited(widget.index - 1);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => WebtoonContentPage(
-                                title: widget.directories[widget.index - 1].path
-                                    .split('/')
-                                    .last,
-                                path: widget.directories[widget.index - 1].path,
-                                directories: widget.directories,
-                                index: widget.index - 1,
-                                updateVisited: widget.updateVisited,
-                              ),
-                            ),
-                          );
+                        if (_currentIndex > 0) {
+                          _currentIndex--;
+                          _path = widget.directories[_currentIndex].path;
+                          _title = _path.split('/').last;
+                          widget.updateVisited(_currentIndex);
+                          _loadImages();
                         }
                       },
                     ),
@@ -119,24 +113,14 @@ class _WebtoonContentPageState extends State<WebtoonContentPage> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 10),
                       iconSize: 100.0,
-                      icon: Icon(Icons.arrow_forward),
+                      icon: const Icon(Icons.arrow_forward),
                       onPressed: () {
-                        if (widget.index < widget.directories.length - 1) {
-                          widget.updateVisited(widget.index + 1);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => WebtoonContentPage(
-                                title: widget.directories[widget.index + 1].path
-                                    .split('/')
-                                    .last,
-                                path: widget.directories[widget.index + 1].path,
-                                directories: widget.directories,
-                                index: widget.index + 1,
-                                updateVisited: widget.updateVisited,
-                              ),
-                            ),
-                          );
+                        if (_currentIndex < widget.directories.length - 1) {
+                          _currentIndex++;
+                          _path = widget.directories[_currentIndex].path;
+                          _title = _path.split('/').last;
+                          widget.updateVisited(_currentIndex);
+                          _loadImages();
                         }
                       },
                     ),
@@ -145,7 +129,6 @@ class _WebtoonContentPageState extends State<WebtoonContentPage> {
               ),
             ),
             pinned: true,
-            floating: true,
           ),
           SliverToBoxAdapter(
             child: Container(
@@ -170,7 +153,7 @@ class _SliverHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent => 50.0;
+  double get maxExtent => 200.0;
 
   @override
   double get minExtent => 50.0;
