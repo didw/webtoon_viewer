@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
 
 import 'webtoon/webtoon_list.dart';
 
@@ -105,6 +106,10 @@ class _WebtoonMainPageState extends State<WebtoonMainPage> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [],
+    );
     return Scaffold(
       appBar: AppBar(
         title: const Text("Webtoon List"),
