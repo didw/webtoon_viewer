@@ -119,7 +119,12 @@ class _WebtoonMainPageState extends State<WebtoonMainPage> {
         itemBuilder: (context, index) {
           WebtoonList webtoonList = _webtoonList[index];
           return ListTile(
-            title: Text(webtoonList.title),
+            title: Text(
+              webtoonList.title,
+              style: const TextStyle(
+                fontSize: 30.0,
+              ),
+            ),
             onTap: () {
               // Navigate to the webtoon detail page
               WebtoonList webtoonList = _webtoonList[index];

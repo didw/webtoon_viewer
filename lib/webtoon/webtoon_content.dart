@@ -8,6 +8,7 @@ class WebtoonContentPage extends StatefulWidget {
   final String path;
   final List<Directory> directories;
   final int index;
+  final Function updateVisited;
 
   const WebtoonContentPage({
     Key? key,
@@ -15,6 +16,7 @@ class WebtoonContentPage extends StatefulWidget {
     required this.path,
     required this.directories,
     required this.index,
+    required this.updateVisited,
   }) : super(key: key);
 
   @override
@@ -75,18 +77,27 @@ class _WebtoonContentPageState extends State<WebtoonContentPage> {
               childCount: _images.length,
             ),
           ),
+          SliverToBoxAdapter(
+            child: Container(
+              height: 100.0, // Added space at the bottom
+            ),
+          ),
           SliverPersistentHeader(
             delegate: _SliverHeaderDelegate(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                height: 50.0,
+                height: 200.0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 10),
+                      iconSize: 100.0,
                       icon: Icon(Icons.arrow_back),
                       onPressed: () {
                         if (widget.index > 0) {
+                          widget.updateVisited(widget.index - 1);
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -97,6 +108,7 @@ class _WebtoonContentPageState extends State<WebtoonContentPage> {
                                 path: widget.directories[widget.index - 1].path,
                                 directories: widget.directories,
                                 index: widget.index - 1,
+                                updateVisited: widget.updateVisited,
                               ),
                             ),
                           );
@@ -104,9 +116,13 @@ class _WebtoonContentPageState extends State<WebtoonContentPage> {
                       },
                     ),
                     IconButton(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 10),
+                      iconSize: 100.0,
                       icon: Icon(Icons.arrow_forward),
                       onPressed: () {
                         if (widget.index < widget.directories.length - 1) {
+                          widget.updateVisited(widget.index + 1);
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -117,6 +133,7 @@ class _WebtoonContentPageState extends State<WebtoonContentPage> {
                                 path: widget.directories[widget.index + 1].path,
                                 directories: widget.directories,
                                 index: widget.index + 1,
+                                updateVisited: widget.updateVisited,
                               ),
                             ),
                           );
@@ -128,6 +145,12 @@ class _WebtoonContentPageState extends State<WebtoonContentPage> {
               ),
             ),
             pinned: true,
+            floating: true,
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              height: 200.0, // Added space at the bottom
+            ),
           ),
         ],
       ),
