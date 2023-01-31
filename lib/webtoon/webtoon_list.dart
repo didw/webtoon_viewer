@@ -1,14 +1,19 @@
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 
-import 'webtoon.dart';
-import 'webtoon_detail.dart';
+import 'webtoon_content.dart';
 
 class WebtoonList extends StatefulWidget {
-  final Webtoon webtoon;
+  final String title;
+  final String path;
 
-  const WebtoonList({Key? key, required this.webtoon}) : super(key: key);
+  const WebtoonList({
+    Key? key,
+    required this.title,
+    required this.path,
+  }) : super(key: key);
 
   @override
   _WebtoonListState createState() => _WebtoonListState();
@@ -24,7 +29,7 @@ class _WebtoonListState extends State<WebtoonList> {
   }
 
   void _loadWebtoons() {
-    String path = widget.webtoon.path;
+    String path = widget.path;
     Directory directory = Directory(path);
     List<FileSystemEntity> entities = directory.listSync(followLinks: false);
 
@@ -39,7 +44,7 @@ class _WebtoonListState extends State<WebtoonList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.webtoon.title),
+        title: Text(widget.title),
       ),
       body: ListView.builder(
         itemCount: _directories.length,
@@ -49,14 +54,15 @@ class _WebtoonListState extends State<WebtoonList> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => WebtoonDetailPage(
+                  builder: (context) => WebtoonContentPage(
+                    title: p.basename(_directories[index].path),
                     path: _directories[index].path,
                   ),
                 ),
               );
             },
             child: ListTile(
-              title: Text(basename(_directories[index].path)),
+              title: Text(p.basename(_directories[index].path)),
             ),
           );
         },

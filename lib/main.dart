@@ -2,8 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-import 'webtoon/webtoon.dart';
+import 'webtoon/webtoon_list.dart';
 
 void main() => runApp(const MyApp());
 
@@ -17,35 +18,49 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const WebtoonListPage(),
+      home: const WebtoonMainPage(),
     );
   }
 }
 
-class WebtoonListPage extends StatefulWidget {
-  const WebtoonListPage({super.key});
+class WebtoonMainPage extends StatefulWidget {
+  const WebtoonMainPage({super.key});
 
   @override
-  _WebtoonListPageState createState() => _WebtoonListPageState();
+  _WebtoonMainPageState createState() => _WebtoonMainPageState();
 }
 
-class _WebtoonListPageState extends State<WebtoonListPage> {
-  List<Webtoon> _webtoonList = [];
+class _WebtoonMainPageState extends State<WebtoonMainPage> {
+  List<WebtoonList> _webtoonList = [];
 
   @override
   void initState() {
     super.initState();
+    _getPermission();
     _checkForZipFiles();
     _loadWebtoons();
+  }
+
+  void _getPermission() async {
+    final status = await Permission.storage.status;
+    const statusManageStorage = Permission.manageExternalStorage;
+    if (status.isDenied ||
+        !status.isGranted ||
+        !await statusManageStorage.isGranted) {
+      await [
+        Permission.storage,
+        Permission.mediaLibrary,
+        Permission.requestInstallPackages,
+        Permission.manageExternalStorage,
+      ].request();
+    }
   }
 
   void _checkForZipFiles() {
     String path = "/sdcard/Download/Webtoons";
     Directory directory = Directory(path);
     List<FileSystemEntity> entities = directory.listSync(recursive: false);
-    print(entities);
     for (FileSystemEntity entity in entities) {
-      print(entity);
       if (entity is File) {
         String filename = p.basename(entity.path);
         if (filename.endsWith(".zip")) {
@@ -74,12 +89,12 @@ class _WebtoonListPageState extends State<WebtoonListPage> {
     List<FileSystemEntity> directories = directory.listSync(recursive: false);
 
     // Create a list of webtoons
-    List<Webtoon> webtoons = [];
+    List<WebtoonList> webtoons = [];
     for (FileSystemEntity entity in directories) {
       // Check if the entity is a directory
       if (entity is Directory) {
         String title = p.basename(entity.path);
-        webtoons.add(Webtoon(title: title, path: entity.path));
+        webtoons.add(WebtoonList(title: title, path: entity.path));
       }
     }
 
@@ -97,16 +112,19 @@ class _WebtoonListPageState extends State<WebtoonListPage> {
       body: ListView.builder(
         itemCount: _webtoonList.length,
         itemBuilder: (context, index) {
-          Webtoon webtoon = _webtoonList[index];
+          WebtoonList webtoonList = _webtoonList[index];
           return ListTile(
-            title: Text(webtoon.title),
+            title: Text(webtoonList.title),
             onTap: () {
               // Navigate to the webtoon detail page
-              Webtoon webtoon = _webtoonList[index];
+              WebtoonList webtoonList = _webtoonList[index];
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => WebtoonList(webtoon: webtoon),
+                  builder: (context) => WebtoonList(
+                    title: webtoonList.title,
+                    path: webtoonList.path,
+                  ),
                 ),
               );
             },
