@@ -57,6 +57,8 @@ class _WebtoonListState extends State<WebtoonList> {
                   builder: (context) => WebtoonContentPage(
                     title: p.basename(_directories[index].path),
                     path: _directories[index].path,
+                    directories: _directories,
+                    index: index,
                   ),
                 ),
               );
