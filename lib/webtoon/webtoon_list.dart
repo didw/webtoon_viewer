@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'webtoon_content.dart';
 
@@ -21,6 +22,7 @@ class WebtoonList extends StatefulWidget {
 
 class _WebtoonListState extends State<WebtoonList> {
   final List<Directory> _directories = [];
+  Set<String> _visitedIndices = {};
 
   @override
   void initState() {
@@ -40,6 +42,14 @@ class _WebtoonListState extends State<WebtoonList> {
     }
   }
 
+  void _updateVisitedIndices(int index) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool("$index", true);
+    setState(() {
+      _visitedIndices.add("$index");
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,6 +61,7 @@ class _WebtoonListState extends State<WebtoonList> {
         itemBuilder: (context, index) {
           return InkWell(
             onTap: () {
+              _updateVisitedIndices(index);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -59,12 +70,20 @@ class _WebtoonListState extends State<WebtoonList> {
                     path: _directories[index].path,
                     directories: _directories,
                     index: index,
+                    updateVisited: _updateVisitedIndices,
                   ),
                 ),
               );
             },
             child: ListTile(
-              title: Text(p.basename(_directories[index].path)),
+              title: Text(
+                p.basename(_directories[index].path),
+                style: TextStyle(
+                  color: _visitedIndices.contains("$index")
+                      ? Colors.black38
+                      : Colors.black87,
+                ),
+              ),
             ),
           );
         },
