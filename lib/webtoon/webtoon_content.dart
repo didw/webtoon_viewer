@@ -73,12 +73,9 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                return Hero(
-                  tag: index,
-                  child: Image.file(
-                    File(_images[index]),
-                    fit: BoxFit.cover,
-                  ),
+                return Image.file(
+                  File(_images[index]),
+                  fit: BoxFit.cover,
                 );
               },
               childCount: _images.length,
