@@ -28,8 +28,6 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
   int _currentIndex = 0;
   String _title = '';
   String _path = '';
-  double _scale = 1.0;
-  double _initialScale = 1.0;
 
   @override
   void initState() {
@@ -75,22 +73,9 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                return GestureDetector(
-                  onScaleStart: (details) {
-                    setState(() {
-                      _initialScale = _scale;
-                    });
-                  },
-                  onScaleUpdate: (details) {
-                    setState(() {
-                      _scale = _initialScale * details.scale;
-                    });
-                  },
-                  child: Image.file(
-                    File(_images[index]),
-                    fit: BoxFit.cover,
-                    scale: _scale,
-                  ),
+                return Image.file(
+                  File(_images[index]),
+                  fit: BoxFit.cover,
                 );
               },
               childCount: _images.length,
