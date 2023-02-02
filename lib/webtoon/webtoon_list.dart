@@ -22,7 +22,7 @@ class WebtoonList extends StatefulWidget {
 
 class _WebtoonListState extends State<WebtoonList> {
   final List<Directory> _directories = [];
-  Set<String> _visitedIndices = {};
+  final Set<String> _visitedIndices = {};
 
   @override
   void initState() {
@@ -40,13 +40,28 @@ class _WebtoonListState extends State<WebtoonList> {
         _directories.add(entity);
       }
     }
+    _loadVisitedIndices();
   }
 
-  void _updateVisitedIndices(int index) async {
+  void _loadVisitedIndices() {
+    SharedPreferences.getInstance().then((prefs) {
+      for (int i = 0; i < _directories.length; i++) {
+        final String name = "${widget.title}_$i";
+        if (prefs.getBool(name) ?? false) {
+          setState(() {
+            _visitedIndices.add(name);
+          });
+        }
+      }
+    });
+  }
+
+  void _updateVisitedIndices(String title, int index) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool("$index", true);
+    final String name = "${title}_$index";
+    prefs.setBool(name, true);
     setState(() {
-      _visitedIndices.add("$index");
+      _visitedIndices.add(name);
     });
   }
 
@@ -61,7 +76,7 @@ class _WebtoonListState extends State<WebtoonList> {
         itemBuilder: (context, index) {
           return InkWell(
             onTap: () {
-              _updateVisitedIndices(index);
+              _updateVisitedIndices(widget.title, index);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -79,7 +94,7 @@ class _WebtoonListState extends State<WebtoonList> {
               title: Text(
                 p.basename(_directories[index].path),
                 style: TextStyle(
-                  color: _visitedIndices.contains("$index")
+                  color: _visitedIndices.contains("${widget.title}_$index")
                       ? Colors.black38
                       : Colors.black87,
                 ),

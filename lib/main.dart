@@ -28,10 +28,10 @@ class WebtoonMainPage extends StatefulWidget {
   const WebtoonMainPage({super.key});
 
   @override
-  _WebtoonMainPageState createState() => _WebtoonMainPageState();
+  WebtoonMainPageState createState() => WebtoonMainPageState();
 }
 
-class _WebtoonMainPageState extends State<WebtoonMainPage> {
+class WebtoonMainPageState extends State<WebtoonMainPage> {
   List<WebtoonList> _webtoonList = [];
 
   @override

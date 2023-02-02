@@ -104,7 +104,7 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
                           _currentIndex--;
                           _path = widget.directories[_currentIndex].path;
                           _title = _path.split('/').last;
-                          widget.updateVisited(_currentIndex);
+                          widget.updateVisited(_title, _currentIndex);
                           _loadImages();
                         }
                       },
@@ -119,7 +119,7 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
                           _currentIndex++;
                           _path = widget.directories[_currentIndex].path;
                           _title = _path.split('/').last;
-                          widget.updateVisited(_currentIndex);
+                          widget.updateVisited(_title, _currentIndex);
                           _loadImages();
                         }
                       },
