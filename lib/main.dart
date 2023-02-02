@@ -89,6 +89,8 @@ class WebtoonMainPageState extends State<WebtoonMainPage> {
     Directory directory = Directory(path);
     List<FileSystemEntity> directories = directory.listSync(recursive: false);
 
+    // sort directories by name
+    directories.sort((a, b) => a.path.compareTo(b.path));
     // Create a list of webtoons
     List<WebtoonList> webtoons = [];
     for (FileSystemEntity entity in directories) {
