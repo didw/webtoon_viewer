@@ -38,14 +38,14 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
     _loadImages();
   }
 
-  void _loadImages() {
-    // Get the list of images for the selected webtoon
+  void _loadImages() async {
+    setState(() {
+      _images = [];
+    });
     Directory directory = Directory(_path);
     List<FileSystemEntity> entities = directory.listSync();
 
-    // Create a list of image paths
     List<String> images = [];
-    // loop in sorted way
     entities.sort((a, b) => a.path.compareTo(b.path));
     for (FileSystemEntity entity in entities) {
       if (entity is File) {
@@ -73,69 +73,74 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                return Image.file(
-                  File(_images[index]),
-                  fit: BoxFit.cover,
+                return Hero(
+                  tag: index,
+                  child: Image.file(
+                    File(_images[index]),
+                    fit: BoxFit.cover,
+                  ),
                 );
               },
               childCount: _images.length,
             ),
           ),
-          SliverToBoxAdapter(
-            child: Container(
-              height: 100.0, // Added space at the bottom
-            ),
-          ),
+          _buildBottomSpacer(100.0),
           SliverPersistentHeader(
-            delegate: _SliverHeaderDelegate(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                height: 200.0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 10),
-                      iconSize: 100.0,
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () {
-                        if (_currentIndex > 0) {
-                          _currentIndex--;
-                          _path = widget.directories[_currentIndex].path;
-                          _title = _path.split('/').last;
-                          widget.updateVisited(_title, _currentIndex);
-                          _loadImages();
-                        }
-                      },
-                    ),
-                    IconButton(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 10),
-                      iconSize: 100.0,
-                      icon: const Icon(Icons.arrow_forward),
-                      onPressed: () {
-                        if (_currentIndex < widget.directories.length - 1) {
-                          _currentIndex++;
-                          _path = widget.directories[_currentIndex].path;
-                          _title = _path.split('/').last;
-                          widget.updateVisited(_title, _currentIndex);
-                          _loadImages();
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            delegate: _buildHeader(),
             pinned: true,
           ),
-          SliverToBoxAdapter(
-            child: Container(
-              height: 200.0, // Added space at the bottom
-            ),
-          ),
+          _buildBottomSpacer(200.0),
         ],
+      ),
+    );
+  }
+
+  SliverToBoxAdapter _buildBottomSpacer(double height) {
+    return SliverToBoxAdapter(
+      child: Container(
+        height: height,
+      ),
+    );
+  }
+
+  _SliverHeaderDelegate _buildHeader() {
+    return _SliverHeaderDelegate(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        height: 200.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              iconSize: 100.0,
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                if (_currentIndex > 0) {
+                  _currentIndex--;
+                  _path = widget.directories[_currentIndex].path;
+                  _title = _path.split('/').last;
+                  widget.updateVisited(_title, _currentIndex);
+                  _loadImages();
+                }
+              },
+            ),
+            IconButton(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              iconSize: 100.0,
+              icon: const Icon(Icons.arrow_forward),
+              onPressed: () {
+                if (_currentIndex < widget.directories.length - 1) {
+                  _currentIndex++;
+                  _path = widget.directories[_currentIndex].path;
+                  _title = _path.split('/').last;
+                  widget.updateVisited(_title, _currentIndex);
+                  _loadImages();
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
