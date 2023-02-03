@@ -38,32 +38,52 @@ class WebtoonMainPageState extends State<WebtoonMainPage> {
   @override
   void initState() {
     super.initState();
-    _getPermission();
+    _requestPermissions();
     _loadWebtoons();
   }
 
-  void _getPermission() async {
-    final status = await Permission.storage.status;
-    const statusManageStorage = Permission.manageExternalStorage;
-    if (status.isDenied ||
-        !status.isGranted ||
-        !await statusManageStorage.isGranted) {
-      await [
-        Permission.storage,
-        Permission.mediaLibrary,
-        Permission.requestInstallPackages,
-        Permission.manageExternalStorage,
-      ].request();
+  void _handlePermissionDenied(
+      Map<Permission, PermissionStatus> permissionResult) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Permissions Required'),
+          content: const Text(
+              'Please grant the storage and manage external storage permissions to continue.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _requestPermissions() async {
+    var permissionResult = await [
+      Permission.storage,
+      Permission.manageExternalStorage,
+    ].request();
+
+    if (permissionResult[Permission.storage]!.isGranted &&
+        permissionResult[Permission.manageExternalStorage]!.isGranted) {
+      // Permissions are granted
+    } else {
+      _handlePermissionDenied(permissionResult);
     }
   }
 
   void _loadWebtoons() {
     const String path = "/sdcard/Download/Webtoons";
     List<FileSystemEntity> directories;
+    Directory directory = Directory(path);
     try {
-      Directory directory = Directory(path);
       directories = directory.listSync(recursive: false);
     } catch (e) {
+      print(e);
       const Tooltip(
         message:
             "Can not eccess /sdcard/Download/Webtoons, Allow permission first",
