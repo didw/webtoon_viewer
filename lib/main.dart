@@ -33,12 +33,12 @@ class WebtoonMainPage extends StatefulWidget {
 
 class WebtoonMainPageState extends State<WebtoonMainPage> {
   List<WebtoonList> _webtoonList = [];
+  bool _needPermission = false;
 
   @override
   void initState() {
     super.initState();
     _getPermission();
-    _checkForZipFiles();
     _loadWebtoons();
   }
 
@@ -57,44 +57,25 @@ class WebtoonMainPageState extends State<WebtoonMainPage> {
     }
   }
 
-  void _checkForZipFiles() {
-    String path = "/sdcard/Download/Webtoons";
-    Directory directory = Directory(path);
-    List<FileSystemEntity> entities = directory.listSync(recursive: false);
-    for (FileSystemEntity entity in entities) {
-      if (entity is File) {
-        String filename = p.basename(entity.path);
-        if (filename.endsWith(".zip")) {
-          String subDirectoryName = filename.substring(0, filename.length - 4);
-          if (!Directory("$path/$subDirectoryName").existsSync()) {
-            // Extract the zip file
-            List<int> bytes = entity.readAsBytesSync();
-            Archive archive = ZipDecoder().decodeBytes(bytes);
-            for (ArchiveFile file in archive) {
-              String fileName = p.basename(file.name);
-              File("$path/$subDirectoryName/$fileName")
-                  .writeAsBytesSync(file.content);
-            }
-          }
-        }
-      }
-    }
-  }
-
   void _loadWebtoons() {
-    // Define the predefined path to the directory
-    String path = "/sdcard/Download/Webtoons";
-
-    // Get the list of directories in the predefined path
-    Directory directory = Directory(path);
-    List<FileSystemEntity> directories = directory.listSync(recursive: false);
-
-    // sort directories by name
+    const String path = "/sdcard/Download/Webtoons";
+    List<FileSystemEntity> directories;
+    try {
+      Directory directory = Directory(path);
+      directories = directory.listSync(recursive: false);
+    } catch (e) {
+      const Tooltip(
+        message:
+            "Can not eccess /sdcard/Download/Webtoons, Allow permission first",
+        child: Text(
+            "Can not eccess /sdcard/Download/Webtoons, Allow permission first"),
+      );
+      directories = [];
+      _needPermission = true;
+    }
     directories.sort((a, b) => a.path.compareTo(b.path));
-    // Create a list of webtoons
     List<WebtoonList> webtoons = [];
     for (FileSystemEntity entity in directories) {
-      // Check if the entity is a directory
       if (entity is Directory) {
         String title = p.basename(entity.path);
         webtoons.add(WebtoonList(title: title, path: entity.path));
@@ -114,7 +95,9 @@ class WebtoonMainPageState extends State<WebtoonMainPage> {
     );
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Webtoon List"),
+        title: _needPermission
+            ? const Text("Need Permission")
+            : const Text("Webtoon List"),
       ),
       body: ListView.builder(
         itemCount: _webtoonList.length,
