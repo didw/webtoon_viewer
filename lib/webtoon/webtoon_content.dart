@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 class WebtoonContentPage extends StatefulWidget {
   final String title;
+  final String subTitle;
   final String path;
   final List<Directory> directories;
   final int index;
@@ -13,6 +14,7 @@ class WebtoonContentPage extends StatefulWidget {
   const WebtoonContentPage({
     Key? key,
     required this.title,
+    required this.subTitle,
     required this.path,
     required this.directories,
     required this.index,
@@ -26,14 +28,14 @@ class WebtoonContentPage extends StatefulWidget {
 class WebtoonContentPageState extends State<WebtoonContentPage> {
   List<String> _images = [];
   int _currentIndex = 0;
-  String _title = '';
+  String _subTitle = '';
   String _path = '';
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.index;
-    _title = widget.title;
+    _subTitle = widget.subTitle;
     _path = widget.path;
     _loadImages();
   }
@@ -67,7 +69,7 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            title: Text(_title),
+            title: Text(_subTitle),
             floating: false,
           ),
           SliverList(
@@ -116,8 +118,7 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
                 if (_currentIndex > 0) {
                   _currentIndex--;
                   _path = widget.directories[_currentIndex].path;
-                  _title = _path.split('/').last;
-                  widget.updateVisited(_title, _currentIndex);
+                  widget.updateVisited(widget.title, _currentIndex);
                   _loadImages();
                 }
               },
@@ -130,8 +131,7 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
                 if (_currentIndex < widget.directories.length - 1) {
                   _currentIndex++;
                   _path = widget.directories[_currentIndex].path;
-                  _title = _path.split('/').last;
-                  widget.updateVisited(_title, _currentIndex);
+                  widget.updateVisited(widget.title, _currentIndex);
                   _loadImages();
                 }
               },

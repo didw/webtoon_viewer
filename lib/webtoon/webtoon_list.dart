@@ -23,11 +23,17 @@ class WebtoonList extends StatefulWidget {
 class _WebtoonListState extends State<WebtoonList> {
   final List<Directory> _directories = [];
   final Set<String> _visitedIndices = {};
+  late SharedPreferences prefs;
 
   @override
   void initState() {
     super.initState();
-    _loadWebtoons();
+    SharedPreferences.getInstance().then((preferences) {
+      setState(() {
+        prefs = preferences;
+      });
+      _loadWebtoons();
+    });
   }
 
   void _loadWebtoons() {
@@ -44,20 +50,17 @@ class _WebtoonListState extends State<WebtoonList> {
   }
 
   void _loadVisitedIndices() {
-    SharedPreferences.getInstance().then((prefs) {
-      for (int i = 0; i < _directories.length; i++) {
-        final String name = "${widget.title}_$i";
-        if (prefs.getBool(name) ?? false) {
-          setState(() {
-            _visitedIndices.add(name);
-          });
-        }
+    for (int i = 0; i < _directories.length; i++) {
+      final String name = "${widget.title}_$i";
+      if (prefs.getBool(name) ?? false) {
+        setState(() {
+          _visitedIndices.add(name);
+        });
       }
-    });
+    }
   }
 
-  void _updateVisitedIndices(String title, int index) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  void _updateVisitedIndices(String title, int index) {
     final String name = "${title}_$index";
     prefs.setBool(name, true);
     setState(() {
@@ -71,9 +74,10 @@ class _WebtoonListState extends State<WebtoonList> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: ListView.builder(
+      body: ListView.separated(
         itemCount: _directories.length,
         itemBuilder: (context, index) {
+          final String name = "${widget.title}_$index";
           return InkWell(
             onTap: () {
               _updateVisitedIndices(widget.title, index);
@@ -81,7 +85,8 @@ class _WebtoonListState extends State<WebtoonList> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => WebtoonContentPage(
-                    title: p.basename(_directories[index].path),
+                    title: widget.title,
+                    subTitle: p.basename(_directories[index].path),
                     path: _directories[index].path,
                     directories: _directories,
                     index: index,
@@ -90,18 +95,30 @@ class _WebtoonListState extends State<WebtoonList> {
                 ),
               );
             },
-            child: ListTile(
-              title: Text(
-                p.basename(_directories[index].path),
-                style: TextStyle(
-                  color: _visitedIndices.contains("${widget.title}_$index")
-                      ? Colors.black38
-                      : Colors.black87,
-                ),
+            child: Container(
+              height: 60.0,
+              color: Colors.white,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      p.basename(_directories[index].path),
+                      style: TextStyle(
+                        color: _visitedIndices.contains(name)
+                            ? Colors.black38
+                            : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
         },
+        separatorBuilder: (context, index) => const Divider(
+          height: 1,
+          color: Colors.grey,
+        ),
       ),
     );
   }
