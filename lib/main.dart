@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:archive/archive.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'webtoon/webtoon_list.dart';
 
@@ -35,62 +34,40 @@ class WebtoonMainPage extends StatefulWidget {
 class WebtoonMainPageState extends State<WebtoonMainPage> {
   List<WebtoonList> _webtoonList = [];
   bool _needPermission = false;
+  String _rootPath = "";
 
   @override
   void initState() {
     super.initState();
-    _requestPermissions();
-    _loadWebtoons();
+    _getRootPath().then((rootPath) {
+      setState(() {
+        _rootPath = rootPath;
+      });
+      _loadWebtoons();
+    });
   }
 
-  void _handlePermissionDenied(
-      Map<Permission, PermissionStatus> permissionResult) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Permissions Required'),
-          content: const Text(
-              'Please grant the storage and manage external storage permissions to continue.'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _requestPermissions() async {
-    var permissionResult = await [
-      Permission.storage,
-      Permission.manageExternalStorage,
-    ].request();
-
-    if (permissionResult[Permission.storage]!.isGranted &&
-        permissionResult[Permission.manageExternalStorage]!.isGranted) {
-      // Permissions are granted
-    } else {
-      _handlePermissionDenied(permissionResult);
+  Future<String> _getRootPath() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? rootPath = prefs.getString("rootPath");
+    print(rootPath);
+    if (rootPath != null) {
+      return rootPath;
     }
+    return "";
   }
 
   void _loadWebtoons() {
-    const String path = "/sdcard/Download/Webtoons";
+    print(_rootPath);
     List<FileSystemEntity> directories;
-    Directory directory = Directory(path);
+    Directory directory = Directory(_rootPath);
+    print(directory);
     try {
       directories = directory.listSync(recursive: false);
+      _needPermission = false;
     } catch (e) {
       print(e);
-      const Tooltip(
-        message:
-            "Can not eccess /sdcard/Download/Webtoons, Allow permission first",
-        child: Text(
-            "Can not eccess /sdcard/Download/Webtoons, Allow permission first"),
-      );
+      print("Can not access /sdcard/Download/Webtoons, Allow permission first");
       directories = [];
       _needPermission = true;
     }
@@ -108,6 +85,14 @@ class WebtoonMainPageState extends State<WebtoonMainPage> {
     });
   }
 
+  Future<String> _getWebtoonPath() async {
+    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    if (selectedDirectory != null) {
+      return selectedDirectory;
+    }
+    return "";
+  }
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(
@@ -117,7 +102,7 @@ class WebtoonMainPageState extends State<WebtoonMainPage> {
     return Scaffold(
       appBar: AppBar(
         title: _needPermission
-            ? const Text("Need Permission")
+            ? const Text("Add webtoon directory first")
             : const Text("Webtoon List"),
       ),
       body: ListView.builder(
@@ -146,6 +131,15 @@ class WebtoonMainPageState extends State<WebtoonMainPage> {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          _rootPath = await _getWebtoonPath();
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString("rootPath", _rootPath);
+          _loadWebtoons();
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
