@@ -44,11 +44,12 @@ class WebtoonContentPageState extends State<WebtoonContentPage> {
     setState(() {
       _images = [];
     });
+
     Directory directory = Directory(_path);
-    List<FileSystemEntity> entities = directory.listSync();
+    List<FileSystemEntity> entities = directory.listSync(recursive: true);
+    entities.sort((a, b) => a.path.compareTo(b.path));
 
     List<String> images = [];
-    entities.sort((a, b) => a.path.compareTo(b.path));
     for (FileSystemEntity entity in entities) {
       if (entity is File) {
         String filename = p.basename(entity.path);

@@ -41,6 +41,8 @@ class _WebtoonListState extends State<WebtoonList> {
     Directory directory = Directory(path);
     List<FileSystemEntity> entities = directory.listSync(followLinks: false);
 
+    entities.sort((a, b) => a.path.compareTo(b.path));
+
     for (FileSystemEntity entity in entities) {
       if (entity is Directory) {
         _directories.add(entity);
