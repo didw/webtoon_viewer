@@ -28,7 +28,7 @@ class _WebtoonDetailPageState extends State<WebtoonDetailPage> {
     String path = widget.webtoon.path;
     Directory directory = Directory(path);
     List<FileSystemEntity> entities = directory.listSync();
-
+    setState(() {});
     // Create a list of image paths
     List<String> images = [];
     for (FileSystemEntity entity in entities) {

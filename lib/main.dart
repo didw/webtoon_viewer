@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'webtoon/webtoon_list.dart';
 
 void main() => runApp(const MyApp());
@@ -51,7 +50,6 @@ class WebtoonMainPageState extends State<WebtoonMainPage> {
   Future<String> _getRootPath() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? rootPath = prefs.getString("rootPath");
-    print(rootPath);
     if (rootPath != null) {
       return rootPath;
     }
@@ -59,16 +57,12 @@ class WebtoonMainPageState extends State<WebtoonMainPage> {
   }
 
   void _loadWebtoons() {
-    print(_rootPath);
     List<FileSystemEntity> directories;
     Directory directory = Directory(_rootPath);
-    print(directory);
     try {
       directories = directory.listSync(recursive: false);
       _needPermission = false;
     } catch (e) {
-      print(e);
-      print("Can not access /sdcard/Download/Webtoons, Allow permission first");
       directories = [];
       _needPermission = true;
     }
