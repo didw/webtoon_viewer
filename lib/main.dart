@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'webtoon/webtoon_list.dart';
@@ -86,6 +87,7 @@ class WebtoonMainPageState extends State<WebtoonMainPage> {
   }
 
   Future<String> _getWebtoonPath() async {
+    await Permission.storage.request();
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory != null) {
       return selectedDirectory;
